@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      POSTGRES_USER: learning_user
+      POSTGRES_PASSWORD: change_me_secure
+      POSTGRES_DB: learning_db
+      POSTGRES_PORT: 5432
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: learning_user
+          POSTGRES_PASSWORD: change_me_secure
+          POSTGRES_DB: learning_db
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U $POSTGRES_USER"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.23'
+
+    - name: Copy env.example -> .env and adjust for CI
+      run: |
+        cp .env.example .env
+        # in CI we connect to local service; replace host with 127.0.0.1
+        sed -i 's/POSTGRES_HOST=.*/POSTGRES_HOST=127.0.0.1/' .env
+        sed -i "s|DATABASE_URL=.*|DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@127.0.0.1:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable|" .env
+
+    - name: Wait for Postgres
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y postgresql-client
+        until pg_isready -h 127.0.0.1 -p ${POSTGRES_PORT} -U ${POSTGRES_USER}; do sleep 1; done
+
+    - name: Run migrations
+      env:
+        PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
+      run: |
+        psql "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@127.0.0.1:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable" -f migrations/1_init.up.sql
+
+    - name: Run unit tests
+      run: |
+        go test ./... -v
+
+    - name: Build Docker image
+      run: |
+        docker build -t learning-platform:ci .
