@@ -4,15 +4,17 @@ import (
 	"context"
 	"fmt"
 	"hack_change/internal/handler"
-	"hack_change/internal/middleware"
+	"hack_change/internal/service"
 	"hack_change/pkg/config"
 	postgres "hack_change/pkg/db"
+	repo "hack_change/internal/repository"
 	"hack_change/pkg/logger"
 	"log"
 	"os"
 
-	"github.com/gin-gonic/gin"
 	"hack_change/internal/auth"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -47,19 +49,25 @@ func main() {
 	// Инициализация JWT сервиса
 	jwtService := auth.NewJWTService(cfg.JWT)
 
+	// Инициализация сервисов
+	service := service.NewService(
+		repo.NewAuthUserRepository(db),
+		jwtService,
+	)
+
 	// Публичные роуты (без JWT)
-	authHandler := handler.NewAuthHandler(db)
+	authHandler := handler.NewAuthHandler(service)
 	r.POST("/login", authHandler.Login)
 	r.POST("/register", authHandler.Register)
 
-	// Защищённые роуты
-	protected := r.Group("/api")
-	protected.Use(middleware.AuthMiddleware(jwtService))
-	{
-		courseHandler := handler.NewCourseHandler(db)
-		protected.GET("/courses", courseHandler.List)
-		protected.POST("/courses", courseHandler.Create)
-	}
+	// // Защищённые роуты
+	// protected := r.Group("/api")
+	// protected.Use(middleware.AuthMiddleware(jwtService))
+	// {
+	// 	courseHandler := handler.NewCourseHandler(db)
+	// 	protected.GET("/courses", courseHandler.List)
+	// 	protected.POST("/courses", courseHandler.Create)
+	// }
 
 	log.Println("Server started on :8080")
 	r.Run(":8080")

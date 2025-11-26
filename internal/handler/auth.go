@@ -2,44 +2,58 @@ package handler
 
 import (
 	"net/http"
-	"hack_change/internal/model"
-	"hack_change/internal/repository"
-	"hack_change/pkg/jwt"
+
+	"hack_change/internal/dto"
+	"hack_change/internal/service"
 	"hack_change/pkg/logger"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 type AuthHandler struct {
-	db *gorm.DB
+	svc    service.AuthService
+	logger logger.Logger
 }
 
-func NewAuthHandler(db *gorm.DB) *AuthHandler {
-	return &AuthHandler{db: db}
+func NewAuthHandler(svc service.AuthService) *AuthHandler {
+	return &AuthHandler{svc: svc, logger: logger.New("handlers")}
 }
 
+// Register принимает JSON -> вызывает сервис -> возвращает UserResponse
 func (h *AuthHandler) Register(c *gin.Context) {
-	var input struct {
-		Email    string `json:"email" binding:"required,email"`
-		Password string `json:"password" binding:"required,min=6"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	var req dto.RegisterRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, dto.APIResponse{Error: &dto.APIError{Code: "invalid_request", Message: err.Error()}})
 		return
 	}
 
-	user := model.User{Email: input.Email, Password: input.Password} // лучше хэшируй пароль!
-	repo := repository.NewUserRepo(h.db)
-	if err := repo.Create(&user); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to register"})
+	ctx := c.Request.Context()
+	userResp, err := h.svc.Register(ctx, &req)
+	if err != nil {
+		h.logger.Warn(ctx, "register failed", "error", err.Error())
+		// простая обработка ошибок; можно расширить
+		c.JSON(http.StatusBadRequest, dto.APIResponse{Error: &dto.APIError{Code: "register_failed", Message: err.Error()}})
 		return
 	}
 
-	token, _ := jwt.GenerateToken(user)
-	c.JSON(http.StatusOK, gin.H{"token": token})
+	c.JSON(http.StatusCreated, dto.APIResponse{Data: userResp})
 }
 
+// Login принимает учетные данные, возвращает token + user
 func (h *AuthHandler) Login(c *gin.Context) {
-	// аналогично: проверка по email + пароль → выдача токена
+	var req dto.LoginRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, dto.APIResponse{Error: &dto.APIError{Code: "invalid_request", Message: err.Error()}})
+		return
+	}
+
+	ctx := c.Request.Context()
+	resp, err := h.svc.Login(ctx, &req)
+	if err != nil {
+		h.logger.Warn(ctx, "login failed", "error", err.Error())
+		c.JSON(http.StatusUnauthorized, dto.APIResponse{Error: &dto.APIError{Code: "auth_failed", Message: err.Error()}})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.APIResponse{Data: resp})
 }

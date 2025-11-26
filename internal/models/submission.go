@@ -1,12 +1,16 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 // Submission представляет отправку задания студентом (и/или её оценку)
 type Submission struct {
-	ID           int64      `db:"id" json:"id"`
-	AssignmentID int64      `db:"assignment_id" json:"assignment_id"`
-	StudentID    int64      `db:"student_id" json:"student_id"`
+	ID           uuid.UUID  `db:"id" json:"id"`
+	AssignmentID uuid.UUID  `db:"assignment_id" json:"assignment_id"`
+	StudentID    uuid.UUID  `db:"student_id" json:"student_id"`
 	Content      string     `db:"content" json:"content"`
 	SubmittedAt  time.Time  `db:"submitted_at" json:"submitted_at"`
 	Score        *float64   `db:"score" json:"score,omitempty"`

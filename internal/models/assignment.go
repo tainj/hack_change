@@ -1,11 +1,15 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 // Assignment представляет задание в курсе
 type Assignment struct {
-	ID          int64      `db:"id" json:"id"`
-	CourseID    int64      `db:"course_id" json:"course_id"`
+	ID          uuid.UUID  `db:"id" json:"id"`
+	CourseID    uuid.UUID  `db:"course_id" json:"course_id"`
 	Title       string     `db:"title" json:"title"`
 	Description string     `db:"description" json:"description"`
 	DueAt       *time.Time `db:"due_at" json:"due_at,omitempty"`

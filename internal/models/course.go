@@ -1,13 +1,17 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 // Course представляет учебный курс
 type Course struct {
-	ID          int64     `db:"id" json:"id"`
+	ID          uuid.UUID `db:"id" json:"id"`
 	Title       string    `db:"title" json:"title"`
 	Description string    `db:"description" json:"description"`
-	TeacherID   int64     `db:"teacher_id" json:"teacher_id"`
+	TeacherID   uuid.UUID `db:"teacher_id" json:"teacher_id"`
 	CreatedAt   time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt   time.Time `db:"updated_at" json:"updated_at"`
 }

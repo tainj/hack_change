@@ -1,6 +1,10 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 // Role перечисляет доступные роли пользователя
 type Role string
@@ -13,7 +17,7 @@ const (
 
 // User представляет пользователя системы (студент, преподаватель, админ)
 type User struct {
-	ID           int64     `db:"id" json:"id"`
+	ID           uuid.UUID `db:"id" json:"id"`
 	Email        string    `db:"email" json:"email"`
 	PasswordHash string    `db:"password_hash" json:"-"`
 	Name         string    `db:"name" json:"name"`

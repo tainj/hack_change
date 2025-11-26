@@ -14,6 +14,7 @@ type Config struct {
 	Host     string `env:"POSTGRES_HOST" env-default:"localhost"`
 	Port     string `env:"POSTGRES_PORT" env-default:"5432"`
 	DbName   string `env:"POSTGRES_DB" env-default:"yandex"`
+	Dsn      string `env:"LOCAL_DATABASE_URL" env-default:""`
 }
 
 type DB struct {
@@ -21,8 +22,8 @@ type DB struct {
 }
 
 func New(config Config) (*DB, error) {
-	dsn := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable host=%s port=%s", config.UserName, config.Password, config.DbName, config.Host, config.Port)
-	db, err := sqlx.Connect("postgres", dsn)
+	db, err := sqlx.Connect("postgres", config.Dsn)
+	// log.Println("Connecting to database with DSN:", config.Dsn)
 	if err != nil {
 		log.Fatalln(err)
 	}
