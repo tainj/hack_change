@@ -34,15 +34,27 @@ services:
       - learning-platform-network
     restart: "no"
 
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: learning-platform-app
+    env_file: .env
+    restart: unless-stopped
+    networks:
+      - learning-platform-network
+
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     image: learning-platform-frontend
+    container_name: learning-platform-frontend
+    env_file: .env
     ports:
       - "80:80"
-    # depends_on:
-    #   - app
+    depends_on:
+      - app
     networks:
       - learning-platform-network
 
