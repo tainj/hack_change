@@ -1,0 +1,67 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: learning-platform-postgres
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      TZ: ${TZ}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - learning-platform-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: learning-platform-app
+    restart: unless-stopped
+    env_file: .env
+    # ports:
+    #   - "8080:8080"  # ← в проде не нужен! nginx проксирует внутрь Docker
+    depends_on:
+      postgres:
+        condition: service_healthy  # ← исправлено!
+    networks:
+      - learning-platform-network
+
+  migrate:
+    image: migrate/migrate:latest
+    env_file: .env
+    command: ["-path", "/migrations", "-database", "${DATABASE_URL}", "up"]
+    volumes:
+      - ./migrations:/migrations
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - learning-platform-network
+    restart: "no"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: learning-platform-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - app  # ← добавлено!
+    networks:
+      - learning-platform-network
+
+volumes:
+  postgres_data:
+
+networks:
+  learning-platform-network:
+    driver: bridge
