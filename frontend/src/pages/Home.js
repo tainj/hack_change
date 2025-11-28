@@ -11,136 +11,115 @@ export default function Home() {
     const savedUser = localStorage.getItem('user');
     if (token && savedUser) {
       try {
-        setUser(JSON.parse(savedUser));
+        const userData = JSON.parse(savedUser);
+        if (userData.role === 'teacher') {
+          setUser(userData);
+        } else {
+          navigate('/forbidden', { replace: true });
+        }
       } catch (e) {
-        // некорректные данные — считаем пользователя неавторизованным
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        navigate('/login', { replace: true });
       }
+    } else {
+      navigate('/login', { replace: true });
     }
-  }, []);
+  }, [navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
-    navigate('/login');
-  };
+  if (!user) return null;
+
+  // Все действия — включая "Добавить студентов"
+  const actions = [
+    {
+      title: 'Мои курсы',
+      desc: 'Создавайте и управляйте курсами',
+      icon: '📚',
+      to: '/courses',
+      color: '#0033A0',
+    },
+    {
+      title: 'Новый материал',
+      desc: 'Загрузите лекцию, PDF или видео',
+      icon: '📤',
+      to: '/materials/upload',
+      color: '#0057D9',
+    },
+    {
+      title: 'Проверить задания',
+      desc: 'Оцените сабмиты студентов',
+      icon: '✅',
+      to: '/submissions',
+      color: '#28A745',
+    },
+    {
+      title: 'Добавить студентов',
+      desc: 'Пригласите студентов на курс',
+      icon: '👥',
+      to: '/students/add',
+      color: '#FF9F43', // тёплый акцент — выделяется, но не кричит
+    },
+    {
+      title: 'Журнал успеваемости',
+      desc: 'Сводка по всем студентам',
+      icon: '📊',
+      to: '/grades',
+      color: '#6F42C1',
+    },
+  ];
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem' }}>
-      <h1 style={{ fontSize: '2.2rem', fontWeight: '700', color: '#2c3e50', marginBottom: '1.5rem' }}>
-        Добро пожаловать в LearnPlatform
-      </h1>
+    <div style={{ maxWidth: '860px', margin: '0 auto', padding: '2rem 1.5rem' }}>
+      {/* Приветствие */}
+      <div
+        style={{
+          backgroundColor: '#f0f7ff',
+          padding: '1.5rem',
+          borderRadius: '12px',
+          marginBottom: '2.5rem',
+          borderLeft: '4px solid #0057D9',
+        }}
+      >
+        <h1 style={{ margin: '0 0 0.6rem', color: '#0033A0', fontSize: '1.6rem' }}>
+          Добро пожаловать, {user.first_name}!
+        </h1>
+        <p style={{ margin: 0, color: '#495057', lineHeight: 1.5 }}>
+          Вы — в цифровой среде преподавателя <strong>StudyHub</strong>.  
+          Здесь вы создаёте курсы, публикуете материалы, проверяете задания, управляете составом группы и отслеживаете прогресс — всё в одном месте.
+        </p>
+      </div>
 
-      {user ? (
-        <div>
-          <p style={{ fontSize: '1.2rem', marginBottom: '1.5rem' }}>
-            Привет, <strong>{(user.first_name || user.firstName || user.email) ? ((user.first_name || user.firstName) ? `${user.first_name || user.firstName} ${user.last_name || user.lastName || ''}`.trim() : user.email) : 'гость'}</strong>! Готов учиться?
-          </p>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
-            <Link
-              to="/courses"
-              style={{
-                padding: '1rem',
-                backgroundColor: '#3498db',
-                color: 'white',
-                textDecoration: 'none',
-                borderRadius: '8px',
-                textAlign: 'center',
-                fontWeight: '600',
-              }}
-            >
-              📚 Мои курсы
-            </Link>
-
-            <Link
-              to="/upload"
-              style={{
-                padding: '1rem',
-                backgroundColor: '#2ecc71',
-                color: 'white',
-                textDecoration: 'none',
-                borderRadius: '8px',
-                textAlign: 'center',
-                fontWeight: '600',
-              }}
-            >
-              📤 Загрузить материалы
-            </Link>
-
-            <Link
-              to="/profile"
-              style={{
-                padding: '1rem',
-                backgroundColor: '#9b59b6',
-                color: 'white',
-                textDecoration: 'none',
-                borderRadius: '8px',
-                textAlign: 'center',
-                fontWeight: '600',
-              }}
-            >
-              👤 Мой профиль
-            </Link>
-          </div>
-
-          <button
-            onClick={handleLogout}
+      {/* Быстрые действия — теперь 5 плиток */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.4rem' }}>
+        {actions.map((item, i) => (
+          <Link
+            key={i}
+            to={item.to}
             style={{
-              background: 'none',
-              border: '1px solid #e74c3c',
-              color: '#e74c3c',
-              padding: '0.6rem 1.2rem',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '1rem',
+              display: 'block',
+              padding: '1.4rem',
+              backgroundColor: '#fff',
+              border: '1px solid #e0e6ed',
+              borderRadius: '12px',
+              textDecoration: 'none',
+              color: '#212529',
+              transition: 'box-shadow 0.2s',
+              boxShadow: '0 2px 6px rgba(0, 51, 160, 0.06)',
             }}
+            onMouseEnter={(e) => (e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 51, 160, 0.12)')}
+            onMouseLeave={(e) => (e.currentTarget.style.boxShadow = '0 2px 6px rgba(0, 51, 160, 0.06)')}
           >
-            Выйти из аккаунта
-          </button>
-        </div>
-      ) : (
-        <div>
-          <p style={{ fontSize: '1.2rem', marginBottom: '2rem', color: '#555' }}>
-            Платформа для эффективного обучения и обмена учебными материалами.
-            Присоединяйся уже сегодня!
-          </p>
+            <div style={{ fontSize: '2.2rem', marginBottom: '0.7rem' }}>{item.icon}</div>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: '700', margin: '0 0 0.4rem', color: item.color }}>
+              {item.title}
+            </h2>
+            <p style={{ fontSize: '0.95rem', color: '#6c757d', margin: 0 }}>{item.desc}</p>
+          </Link>
+        ))}
+      </div>
 
-          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-            <Link
-              to="/login"
-              style={{
-                padding: '0.8rem 1.5rem',
-                backgroundColor: '#3498db',
-                color: 'white',
-                textDecoration: 'none',
-                borderRadius: '6px',
-                fontWeight: '600',
-              }}
-            >
-              Войти
-            </Link>
-            <Link
-              to="/register"
-              style={{
-                padding: '0.8rem 1.5rem',
-                backgroundColor: '#2ecc71',
-                color: 'white',
-                textDecoration: 'none',
-                borderRadius: '6px',
-                fontWeight: '600',
-              }}
-            >
-              Зарегистрироваться
-            </Link>
-          </div>
-        </div>
-      )}
-
-      <footer style={{ marginTop: '4rem', paddingTop: '1.5rem', borderTop: '1px solid #eee', color: '#7f8c8d', fontSize: '0.9rem' }}>
-        <p>© {new Date().getFullYear()} LearnPlatform. Образование без границ.</p>
+      <footer style={{ marginTop: '3rem', paddingTop: '1.5rem', borderTop: '1px solid #eee', textAlign: 'center', color: '#888', fontSize: '0.9rem' }}>
+        <p>© {new Date().getFullYear()} StudyHub — цифровая среда преподавателя ПСБ</p>
       </footer>
     </div>
   );

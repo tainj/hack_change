@@ -20,16 +20,28 @@ type AuthService interface {
 	Login(ctx context.Context, req *dto.LoginRequest) (*dto.LoginResponse, error)
 }
 
+type CourseService interface {
+	CreateCourse(ctx context.Context, teacherID string, course *models.Course) error
+	ListCourses(ctx context.Context, teacherID string) ([]*models.Course, error)
+}
+
+// ListCourses возвращает курсы учителя
+func (s *Service) ListCourses(ctx context.Context, teacherID string) ([]*models.Course, error) {
+	return s.courseRepo.ListCourses(ctx, teacherID)
+}
+
 type Service struct {
 	userRepo   repo.UserRepository
+	courseRepo repo.CourseRepository
 	jwtService auth.JWTService
 	logger     logger.Logger
 }
 
 // NewService создает сервис
-func NewService(userRepo repo.UserRepository, jwtService auth.JWTService) *Service {
+func NewService(userRepo repo.UserRepository, courseRepo repo.CourseRepository, jwtService auth.JWTService) *Service {
 	return &Service{
 		userRepo:   userRepo,
+		courseRepo: courseRepo,
 		jwtService: jwtService,
 		logger:     logger.New("service"),
 	}
@@ -96,4 +108,9 @@ func (s *Service) Login(ctx context.Context, req *dto.LoginRequest) (*dto.LoginR
 		User:  dto.UserToResponse(user),
 	}
 	return &loginResp, nil
+}
+
+// CreateCourse создает новый курс
+func (s *Service) CreateCourse(ctx context.Context, teacherID string, course *models.Course) error {
+	return s.courseRepo.CreateCourse(ctx, teacherID, course)
 }

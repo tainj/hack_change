@@ -10,13 +10,13 @@ func UserToResponse(u *models.User) UserResponse {
 		id = u.ID.String()
 	}
 	return UserResponse{
-		ID:          id,
-		Email:       u.Email,
-		FirstName:   u.FirstName,
-		LastName:    u.LastName,
-		MiddleName:  u.MiddleName,
-		Role:      string(u.Role),
-		CreatedAt: u.CreatedAt,
+		ID:         id,
+		Email:      u.Email,
+		FirstName:  u.FirstName,
+		LastName:   u.LastName,
+		MiddleName: u.MiddleName,
+		Role:       string(u.Role),
+		CreatedAt:  u.CreatedAt,
 	}
 }
 
@@ -67,5 +67,29 @@ func SubmissionToResponse(s *models.Submission) SubmissionResponse {
 		Score:        s.Score,
 		GradedAt:     s.GradedAt,
 		Feedback:     s.Feedback,
+	}
+}
+
+func MaterialToResponse(m *models.Material) MaterialResponse {
+	var id, course, uploader string
+	if m != nil {
+		id = m.ID.String()
+		course = m.CourseID.String()
+		uploader = m.UploaderID.String()
+	}
+	desc := m.Description
+	var storage *string
+	if m.StoragePath != nil {
+		storage = m.StoragePath
+	}
+	return MaterialResponse{
+		ID:          id,
+		CourseID:    course,
+		Title:       m.Title,
+		Description: desc,
+		URL:         m.URL,
+		StoragePath: storage,
+		UploaderID:  uploader,
+		CreatedAt:   m.CreatedAt,
 	}
 }
