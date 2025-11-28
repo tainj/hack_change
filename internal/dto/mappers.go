@@ -10,9 +10,11 @@ func UserToResponse(u *models.User) UserResponse {
 		id = u.ID.String()
 	}
 	return UserResponse{
-		ID:        id,
-		Email:     u.Email,
-		Name:      u.Name,
+		ID:          id,
+		Email:       u.Email,
+		FirstName:   u.FirstName,
+		LastName:    u.LastName,
+		MiddleName:  u.MiddleName,
 		Role:      string(u.Role),
 		CreatedAt: u.CreatedAt,
 	}

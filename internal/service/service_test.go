@@ -67,10 +67,11 @@ func TestAuthService_Register_Login(t *testing.T) {
 
 	t.Run("register success", func(t *testing.T) {
 		req := &dto.RegisterRequest{
-			Email:    "alice@example.com",
-			Password: "s3cretpass",
-			Name:     "Alice",
-			Role:     string(models.RoleStudent),
+			Email:     "alice@example.com",
+			Password:  "s3cretpass",
+			FirstName: "Alice",
+			LastName:  "Wonder",
+			Role:      string(models.RoleStudent),
 		}
 
 		userResp, err := svc.Register(ctx, req)
@@ -84,10 +85,11 @@ func TestAuthService_Register_Login(t *testing.T) {
 
 	t.Run("register duplicate email", func(t *testing.T) {
 		req := &dto.RegisterRequest{
-			Email:    "alice@example.com",
-			Password: "s3cretpass",
-			Name:     "Alice",
-			Role:     string(models.RoleStudent),
+			Email:     "alice@example.com",
+			Password:  "s3cretpass",
+			FirstName: "Alice",
+			LastName:  "Wonder",
+			Role:      string(models.RoleStudent),
 		}
 		_, err := svc.Register(ctx, req)
 		if err == nil {
@@ -104,7 +106,8 @@ func TestAuthService_Register_Login(t *testing.T) {
 			ID:           id,
 			Email:        "bob@example.com",
 			PasswordHash: hashed,
-			Name:         "Bob",
+			FirstName:    "Bob",
+			LastName:     "Builder",
 			Role:         models.RoleStudent,
 		}
 		_ = repo.Register(ctx, user)

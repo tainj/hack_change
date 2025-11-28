@@ -13,8 +13,11 @@ export default function Header() {
     if (token && userId) {
       setIsAuth(true);
       // Можно подтянуть имя из localStorage, если сохранишь его при логине
-      const savedUser = JSON.parse(localStorage.getItem('user') || '{}');
-      setUserName(savedUser.name || 'Студент');
+          const savedUser = JSON.parse(localStorage.getItem('user') || '{}');
+          const fname = savedUser.first_name || savedUser.firstName || '';
+          const lname = savedUser.last_name || savedUser.lastName || '';
+          const display = (fname || lname) ? `${fname} ${lname}`.trim() : (savedUser.email || 'Студент');
+          setUserName(display);
     }
   }, []);
 

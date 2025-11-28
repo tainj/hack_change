@@ -36,7 +36,7 @@ export default function Home() {
       {user ? (
         <div>
           <p style={{ fontSize: '1.2rem', marginBottom: '1.5rem' }}>
-            Привет, <strong>{user.name || user.email}</strong>! Готов учиться?
+            Привет, <strong>{(user.first_name || user.firstName || user.email) ? ((user.first_name || user.firstName) ? `${user.first_name || user.firstName} ${user.last_name || user.lastName || ''}`.trim() : user.email) : 'гость'}</strong>! Готов учиться?
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>

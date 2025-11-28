@@ -5,7 +5,9 @@ import { useNavigate, Link } from 'react-router-dom';
 export default function Register() {
   const [role, setRole] = useState('student'); // по умолчанию — студент
   const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [middleName, setMiddleName] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [message, setMessage] = useState('');
@@ -29,13 +31,15 @@ export default function Register() {
 
     try {
       const apiFetch = (await import('../api')).default;
-      const payload = {
-        email,
-        password,
-        password_confirm: passwordConfirm,
-        name,
-        role, // ← отправляем выбранную роль
-      };
+        const payload = {
+          email,
+          password,
+          password_confirm: passwordConfirm,
+          first_name: firstName,
+          last_name: lastName,
+          middle_name: middleName || null,
+          role, // ← отправляем выбранную роль
+        };
 
       const response = await apiFetch('/register', {
         method: 'POST',
@@ -91,21 +95,32 @@ export default function Register() {
           </div>
         </div>
 
-        {/* Имя */}
-        <div style={{ marginBottom: '1.2rem' }}>
+        {/* Имя, Фамилия, Отчество (необязательно) */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1.2rem' }}>
+          <input
+            type="text"
+            placeholder="Фамилия"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            required
+            style={{ padding: '0.75rem', border: '1px solid #ddd', borderRadius: '6px', fontSize: '1rem' }}
+          />
           <input
             type="text"
             placeholder="Имя"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
             required
-            style={{
-              width: '100%',
-              padding: '0.75rem',
-              border: '1px solid #ddd',
-              borderRadius: '6px',
-              fontSize: '1rem',
-            }}
+            style={{ padding: '0.75rem', border: '1px solid #ddd', borderRadius: '6px', fontSize: '1rem' }}
+          />
+        </div>
+        <div style={{ marginBottom: '1.2rem' }}>
+          <input
+            type="text"
+            placeholder="Отчество (необязательно)"
+            value={middleName}
+            onChange={(e) => setMiddleName(e.target.value)}
+            style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '6px', fontSize: '1rem' }}
           />
         </div>
 
